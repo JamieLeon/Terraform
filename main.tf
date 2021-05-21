@@ -187,6 +187,11 @@ resource "aws_lb_target_group" "FlaskForward" {
   vpc_id   = aws_vpc.VPC1.id
 }
 
+resource "aws_lb_target_group_attachment" "FlaskForwardAttachment" {
+  target_group_arn = aws_lb_target_group.FlaskForward.arn
+  target_id = aws_instance.FlaskServer1.id
+}
+
 resource "aws_lb_listener" "FlaskListener" {
   load_balancer_arn = aws_lb.ApplicationLoadBalancer1.arn
   port              = "5000"
