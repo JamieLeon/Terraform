@@ -25,9 +25,6 @@ resource "aws_vpc" "VPC1" {
 
 #Subnets
 resource "aws_subnet" "Public_Subnet" {
-  depends_on = [
-    aws_vpc.VPC1
-  ]
   vpc_id                  = aws_vpc.VPC1.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
@@ -36,10 +33,16 @@ resource "aws_subnet" "Public_Subnet" {
   }
 }
 
+resource "aws_subnet" "Public_Subnet2" {
+  vpc_id                  = aws_vpc.VPC1.id
+  cidr_block              = "10.0.4.0/24"
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "Public2"
+  }
+}
+
 resource "aws_subnet" "Private_Subnet" {
-  depends_on = [
-    aws_vpc.VPC1
-  ]
   vpc_id     = aws_vpc.VPC1.id
   cidr_block = "10.0.2.0/24"
   tags = {
@@ -48,9 +51,6 @@ resource "aws_subnet" "Private_Subnet" {
 }
 
 resource "aws_subnet" "Data_Subnet" {
-  depends_on = [
-    aws_vpc.VPC1
-  ]
   vpc_id     = aws_vpc.VPC1.id
   cidr_block = "10.0.3.0/24"
   tags = {
@@ -60,11 +60,6 @@ resource "aws_subnet" "Data_Subnet" {
 
 #Internet Gateway
 resource "aws_internet_gateway" "IGW1" {
-  depends_on = [
-    aws_vpc.VPC1,
-    aws_subnet.Public_Subnet,
-    aws_subnet.Private_Subnet
-  ]
   vpc_id = aws_vpc.VPC1.id
   tags = {
     Name = "InternetGateway"
@@ -73,10 +68,6 @@ resource "aws_internet_gateway" "IGW1" {
 
 #Route Table - Public Subnet 
 resource "aws_route_table" "Public-Subnet-RouteTable" {
-  depends_on = [
-    aws_vpc.VPC1,
-    aws_internet_gateway.IGW1
-  ]
   vpc_id = aws_vpc.VPC1.id
   route {
     cidr_block = "0.0.0.0/0"
@@ -89,29 +80,17 @@ resource "aws_route_table" "Public-Subnet-RouteTable" {
 
 #Route Table Association with IGW 
 resource "aws_route_table_association" "IGW1-RouteTable" {
-  depends_on = [
-    aws_vpc.VPC1,
-    aws_subnet.Public_Subnet,
-    aws_subnet.Private_Subnet,
-    aws_route_table.Public-Subnet-RouteTable
-  ]
   subnet_id      = aws_subnet.Public_Subnet.id
   route_table_id = aws_route_table.Public-Subnet-RouteTable.id
 }
 
 #Elastic IPs
 resource "aws_eip" "NATGW1-EIP" {
-  depends_on = [
-    aws_route_table_association.IGW1-RouteTable
-  ]
   vpc = true
 }
 
 #NAT Gateway
 resource "aws_nat_gateway" "NATGW1" {
-  depends_on = [
-    aws_eip.NATGW1-EIP
-  ]
   allocation_id = aws_eip.NATGW1-EIP.id
   subnet_id     = aws_subnet.Private_Subnet.id
   tags = {
@@ -121,9 +100,6 @@ resource "aws_nat_gateway" "NATGW1" {
 
 #NAT Gateway Route Table
 resource "aws_route_table" "NATGW1-RouteTable" {
-  depends_on = [
-    aws_nat_gateway.NATGW1
-  ]
   vpc_id = aws_vpc.VPC1.id
   route {
     cidr_block     = "0.0.0.0/0"
@@ -136,20 +112,12 @@ resource "aws_route_table" "NATGW1-RouteTable" {
 
 #NAT Gateway Route Table association
 resource "aws_route_table_association" "NATGW1-RouteTable" {
-  depends_on = [
-    aws_route_table.NATGW1-RouteTable
-  ]
   subnet_id      = aws_subnet.Private_Subnet.id
   route_table_id = aws_route_table.NATGW1-RouteTable.id
 }
 
 #Flask Instance Security Group
 resource "aws_security_group" "Flask-SecurityGroup" {
-  depends_on = [
-    aws_vpc.VPC1,
-    aws_subnet.Public_Subnet,
-    aws_subnet.Private_Subnet
-  ]
   description = "HTTP, PING, SSH"
   name        = "Flask-SecurityGroup"
   vpc_id      = aws_vpc.VPC1.id
@@ -185,9 +153,6 @@ resource "aws_security_group" "Flask-SecurityGroup" {
 
 #Flask EC2 Instance
 resource "aws_instance" "FlaskServer1" {
-  depends_on = [
-    aws_subnet.Private_Subnet
-  ]
   ami                    = var.EC2_AMI
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.Private_Subnet.id
@@ -203,7 +168,12 @@ resource "aws_lb" "ApplicationLoadBalancer1" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.Flask-SecurityGroup.id]
-  subnets            = aws_subnet.Public_Subnet.*.id
+  subnet_mapping {
+    subnet_id     = aws_subnet.Public_Subnet.id
+  }
+  subnet_mapping {
+    subnet_id     = aws_subnet.Public_Subnet2.id
+  }
   tags = {
     Name = "TestALB"
   }
