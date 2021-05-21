@@ -28,7 +28,7 @@ resource "aws_subnet" "Public_Subnet" {
   vpc_id                  = aws_vpc.VPC1.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
-  availability_zone = us-east-1b
+  availability_zone = "us-east-1b"
   tags = {
     Name = "Public"
   }
@@ -38,7 +38,7 @@ resource "aws_subnet" "Public_Subnet2" {
   vpc_id                  = aws_vpc.VPC1.id
   cidr_block              = "10.0.4.0/24"
   map_public_ip_on_launch = true
-  availability_zone = us-east-1a
+  availability_zone = "us-east-1a"
   tags = {
     Name = "Public2"
   }
@@ -176,7 +176,6 @@ resource "aws_instance" "FlaskServer1" {
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.Private_Subnet.id
   vpc_security_group_ids = [aws_security_group.Flask-SecurityGroup.id]
-  availability_zone = "us-east-1a"
   tags = {
     Name = "Flask_From_Terraform"
   }
