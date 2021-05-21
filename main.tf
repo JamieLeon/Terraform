@@ -28,6 +28,7 @@ resource "aws_subnet" "Public_Subnet" {
   vpc_id                  = aws_vpc.VPC1.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
+  availability_zone = us-east-1b
   tags = {
     Name = "Public"
   }
@@ -37,6 +38,7 @@ resource "aws_subnet" "Public_Subnet2" {
   vpc_id                  = aws_vpc.VPC1.id
   cidr_block              = "10.0.4.0/24"
   map_public_ip_on_launch = true
+  availability_zone = us-east-1a
   tags = {
     Name = "Public2"
   }
@@ -78,10 +80,27 @@ resource "aws_route_table" "Public-Subnet-RouteTable" {
   }
 }
 
-#Route Table Association with IGW 
+resource "aws_route_table" "Public-Subnet2-RouteTable" {
+  vpc_id = aws_vpc.VPC1.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.IGW1.id
+  }
+  tags = {
+    Name = "Route Table for the Internet Gateway"
+  }
+}
+
+#Public Subnet - Route Table Association with IGW 
 resource "aws_route_table_association" "IGW1-RouteTable" {
   subnet_id      = aws_subnet.Public_Subnet.id
   route_table_id = aws_route_table.Public-Subnet-RouteTable.id
+}
+
+#Public Subnet 2 - Route Table Association with IGW 
+resource "aws_route_table_association" "IGW1-RouteTable2" {
+  subnet_id      = aws_subnet.Public_Subnet2.id
+  route_table_id = aws_route_table.Public-Subnet2-RouteTable.id
 }
 
 #Elastic IPs
@@ -157,6 +176,7 @@ resource "aws_instance" "FlaskServer1" {
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.Private_Subnet.id
   vpc_security_group_ids = [aws_security_group.Flask-SecurityGroup.id]
+  availability_zone = "us-east-1a"
   tags = {
     Name = "Flask_From_Terraform"
   }
