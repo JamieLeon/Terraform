@@ -169,10 +169,10 @@ resource "aws_lb" "ApplicationLoadBalancer1" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.Flask-SecurityGroup.id]
   subnet_mapping {
-    subnet_id     = aws_subnet.Public_Subnet.id
+    subnet_id = aws_subnet.Public_Subnet.id
   }
   subnet_mapping {
-    subnet_id     = aws_subnet.Public_Subnet2.id
+    subnet_id = aws_subnet.Public_Subnet2.id
   }
   tags = {
     Name = "TestALB"
@@ -189,7 +189,7 @@ resource "aws_lb_target_group" "FlaskForward" {
 
 resource "aws_lb_target_group_attachment" "FlaskForwardAttachment" {
   target_group_arn = aws_lb_target_group.FlaskForward.arn
-  target_id = aws_instance.FlaskServer1.id
+  target_id        = aws_instance.FlaskServer1.id
 }
 
 resource "aws_lb_listener" "FlaskListener" {
