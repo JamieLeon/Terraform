@@ -181,6 +181,17 @@ resource "aws_instance" "FlaskServer1" {
   }
 }
 
+#Bastion EC2 Instance
+resource "aws_instance" "Bastion" {
+  ami                    = var.EC2_AMI
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.Public_Subnet.id
+  vpc_security_group_ids = [aws_security_group.Flask-SecurityGroup.id]
+  tags = {
+    Name = "Bastion From_Terraform"
+  }
+}
+
 #ALB
 resource "aws_lb" "ApplicationLoadBalancer1" {
   name               = "TestALB"
