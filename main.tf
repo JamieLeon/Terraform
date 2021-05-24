@@ -28,7 +28,7 @@ resource "aws_subnet" "Public_Subnet" {
   vpc_id                  = aws_vpc.VPC1.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
-  availability_zone = "us-east-1b"
+  availability_zone       = "us-east-1b"
   tags = {
     Name = "Public"
   }
@@ -38,7 +38,7 @@ resource "aws_subnet" "Public_Subnet2" {
   vpc_id                  = aws_vpc.VPC1.id
   cidr_block              = "10.0.4.0/24"
   map_public_ip_on_launch = true
-  availability_zone = "us-east-1a"
+  availability_zone       = "us-east-1a"
   tags = {
     Name = "Public2"
   }
@@ -231,4 +231,9 @@ resource "aws_lb_listener" "FlaskListener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.FlaskForward.arn
   }
+}
+
+resource "aws_s3_bucket" "FlaskStorage" {
+  bucket = "FlaskStorage"
+  acl    = "public-read"
 }
