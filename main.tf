@@ -234,6 +234,6 @@ resource "aws_lb_listener" "FlaskListener" {
 }
 
 resource "aws_s3_bucket" "FlaskStorage" {
-  bucket = "FlaskStorage"
+  bucket = "FlaskStorage07061994"
   acl    = "public-read"
 }
